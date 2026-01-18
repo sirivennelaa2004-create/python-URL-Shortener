@@ -1,0 +1,88 @@
+from flask import Flask, render_template, request, redirect
+from models import db, URL
+import validators
+import random
+import string
+
+app = Flask(_name_)
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///urls.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
+# Create database tables
+with app.app_context():
+    db.create_all()
+
+
+def generate_short_code(length=6):
+    characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))
+
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+    short_url = None
+    message = ""
+
+    if request.method == "POST":
+        original_url = request.form.get("original_url")
+
+        if validators.url(original_url):
+  …
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL Shortener</title>
+</head>
+<body>
+    <h2>URL Shortener</h2>
+
+    <form method="POST">
+        <input type="text" name="original_url" placeholder="Enter URL" required>
+        <button type="submit">Shorten</button>
+    </form>
+
+    <p style="color:green;">{{ message }}</p>
+
+    {% if short_url %}
+        <p>Short URL:</p>
+        <input type="text" value="{{ short_url }}" readonly>
+    {% endif %}
+
+    <br><br>
+    <a href="/history">View History</a>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL History</title>
+</head>
+<body>
+    <h2>URL History</h2>
+
+    <table border="1">
+        <tr>
+            <th>Original URL</th>
+            <th>Short URL</th>
+        </tr>
+
+        {% for url in urls %}
+        <tr>
+            <td>{{ url.original_url }}</td>
+            <td>
+                <a href="/{{ url.short_code }}" target="_blank">
+                    {{ request.host_url }}{{ url.short_code }}
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <br>
+    <a href="/">Back to Home</a>
+</body>
+</html>
